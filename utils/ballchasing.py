@@ -13,11 +13,15 @@ class Ballchasing:
         kwargs.get('directory', 'replays')
 
     def replay(self, ID, output_file='replays/'):
+        """Downloads the replay with the given ID and returns a Replay object"""
         # Grab the replay file
         # Grab the statistics file
         pass
 
     def upload(self, file):
+        """Uploads a file to ballchasing. Returns a tuple with status code and replay ID.
+        In case of an error, this function will return the error instead of the ID for the replay
+        """
         post_url = self.BASE + "api/v2/upload"
         headers = {}
         headers['Authorization'] = self.token
@@ -31,9 +35,5 @@ class Ballchasing:
 
 
     def load_replays(self, directory='replays/'):
-        # Load replay objects from directory
+        """Loads replay objects from directory"""
         pass
-
-
-    def file_checkout(self, filedir, ID, file_checkout_dir='replays/file_checkout.json'):
-        with open(file_checkout_dir, 'rw') as fc:
