@@ -31,8 +31,6 @@ class Replay(Game):
         .link
         .author  # Who requested the replay to be uploaded
     '''
-    def __init__(self, ID):
+    def __init__(self, ID, *args):
+        super().__init__(*args)
         self.link = f'https://ballchasing/replay/{ID}'
-
-        # Check file_checkout.json if the ID already exists in file format
-        # Check file_checkout.json for the author
