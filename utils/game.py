@@ -1,6 +1,9 @@
+import requests
+import json
+import os
 
-
-
+from datetime import datetime
+from utils.player import Player
 
 class Game:
     '''
@@ -11,26 +14,68 @@ class Game:
         .date
         .players  # Player objects
     '''
-    def __init__(self, data):
-        stats = data.read()[:-1]
-        stats = [line.split(';') for line in stats.split('\n')]
+    API = "https://ballchasing.com/api/"
+    def __init__(self, ID, BC):
+        headers = {}
+        headers['Authorization'] = os.environ.get('BCTOKEN', BC.token)
+        replaydata = requests.get(self.API+'replays/'+ID, headers=headers)
+        self.replaydata = json.loads(replaydata.content)
+        self.id = self.replaydata['id']
+        self.players = self._get_players()
+        self.date = datetime.strptime(self.replaydata.get('date'), '%Y-%m-%dT%H:%M:%SZ')
+        self.playlist = self.replaydata.get('playlist_id')
 
+
+    def _get_players(self):
         players = []
+        for P in self.replaydata['blue']['players']:
+            kwargs = {
+                "team": "blue",
+                "name": P.get('name', None),
+                "steam": P['id']['id'] if P['id']['platform'] == 'steam' else None,
+                "game": self,
+                "score": P['stats']['core']['score'],
+                "goals": P['stats']['core']['goals'],
+                "saves": P['stats']['core']['saves'],
+                "camera": P.get('camera', None),
+                "rank": P.get('rank')
+            }
+            p = Player(**kwargs)
+            players.append(p)
 
-        for player_data in stats[1:]:
-                players.append(Player(player_data))
+
+        for P in self.replaydata['orange']['players']:
+            kwargs = {
+                "team": "orange",
+                "name": P.get('name', None),
+                "steam": P['id']['id'] if P['id']['platform'] == 'steam' else None,
+                "game": self,
+                "score": P['stats']['core']['score'],
+                "goals": P['stats']['core']['goals'],
+                "saves": P['stats']['core']['saves'],
+                "camera": P.get('camera', None)
+            }
+            p = Player(**kwargs)
+            players.append(p)
+        return players
 
 
 class Replay(Game):
     '''
     Class representation of a Replay file uploaded to ballchasing.com.
-    Inherits from core.utils.game.Game()
+    Inherits from utils.game.Game()
 
     Replay(Game)
         .file
         .link
-        .author  # Who requested the replay to be uploaded
+        .author
+        .uploader
     '''
-    def __init__(self, ID, *args):
-        super().__init__(*args)
+    API = "https://ballchasing.com/api/"
+    def __init__(self, ID, BC, **kwargs):
+        super().__init__(ID, BC)
+        self.file = BC.download(ID)
         self.link = f'https://ballchasing/replay/{ID}'
+        self.author = kwargs.get('author', None)
+        self.uploader = self.replaydata['uploader']
+        self.title = self.replaydata['title']
