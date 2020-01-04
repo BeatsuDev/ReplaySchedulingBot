@@ -4,6 +4,13 @@ import discord
 from discord.ext import commands
 
 class ReplaySubmission(commands.Cog):
+    """Cog for Replay Submissions"""
+    FORM = '''
+In-game name:
+Twitch name:
+Region:
+Description:
+'''[1:-1]
     def __init__(self, bot):
         self.bot = bot
 
@@ -42,7 +49,10 @@ class ReplaySubmission(commands.Cog):
         '''
 
     @commands.command()
-    async def form
+    async def form(self, ctx):
+        embed = discord.Embed(desc=description, colour=0xffff00)
+        await ctx.channel.send(embed=embed)
+        await ctx.channel.send(self.form)
 
 
 def setup(bot):
