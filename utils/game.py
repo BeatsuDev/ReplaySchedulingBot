@@ -37,8 +37,9 @@ class Game:
                 "score": P['stats']['core']['score'],
                 "goals": P['stats']['core']['goals'],
                 "saves": P['stats']['core']['saves'],
-                "camera": P.get('camera', None),
-                "rank": P.get('rank')
+                "camera": P.get('camera'),
+                "rank": P.get('rank'),
+                "platform": P['id']['platform']
             }
             p = Player(**kwargs)
             players.append(p)
