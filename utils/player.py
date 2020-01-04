@@ -12,13 +12,14 @@ class Player:
         - Points
         - Goals
         - Saves
-
-    Expected data:
-    ['blue', '', 'DAMO', 'Steam', '76561198054792396', '23', 'Octane', '375', '925', '2', '3', '3', '3', '8', '2', '1',
-    '66.67', '471', '48.47', '2922', '2349', '573', '29', '43', '928', '712', '216', '8', '19', '42.74', '37.99', '374',
-    '552', '89', '1593', '533640', '160.18', '43.09', '146.15', '39.31', '65.43', '17.6', '201.06', '54.08', '153.02',
-    '41.16', '17.68', '4.76', '8.85', '0.1', '89', '174.3', '185.1', '2428', '2096', '2762', '280.78', '75.53', '90.97',
-    '24.47', '235.87', '63.45', '135.89', '36.55', '186.43', '50.15', '95.54', '25.7', '89.79', '24.15', '0', '1']
     '''
-    def __init__(self, data):
-        pass
+    def __init__(self, *args, **kwargs):
+        self.team = kwargs.get('team')
+        self.name = kwargs.get('name')
+        self.steam = kwargs.get('steam')
+        self.game = kwargs.get('game')
+        self.score = kwargs.get('score')
+        self.goals = kwargs.get('goals')
+        self.saves = kwargs.get('saves')
+        self.camera = kwargs.get('camera')
+        self.rank = kwargs.get('rank')

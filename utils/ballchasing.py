@@ -1,22 +1,35 @@
 import requests
 import json
 import re
+import os
+
+from utils.game import Replay
 
 
 class Ballchasing:
+    '''Requires a ballchasing.com api token with access to the full ballchasing
+    api; granted by Ballchasing.com creator CantFly (from the Ballchasing.com
+    discord server)
+    '''
     BASE = "https://ballchasing.com/"
-
     def __init__(self, token, **kwargs):
         self.token = token
-
-        self.cached_replays = []
         kwargs.get('directory', 'replays')
 
-    def replay(self, ID, output_file='replays/'):
+    def replay(self, ID, output_file='replays/', **kwargs):
         """Downloads the replay with the given ID and returns a Replay object"""
-        # Grab the replay file
-        # Grab the statistics file
-        pass
+        return Replay(ID, self, **kwargs)
+
+
+    def download(self, ID, output_file='replays/', name=None):
+        """Downloads a replay file from ballchasing"""
+        if not name: name = ID
+        resp = requests.post(self.BASE + "/dl/replay/" + ID)
+
+        with open(output_file+name+'.replay', 'wb') as f:
+            f.write(resp.content)
+
+        return output_file+name+'.replay'
 
     def upload(self, file):
         """Uploads a file to ballchasing. Returns a tuple with status code and replay ID.
@@ -32,8 +45,3 @@ class Ballchasing:
         if resp.ok:
             return resp.status_code, content['id']
         return resp.status_code, content['error']
-
-
-    def load_replays(self, directory='replays/'):
-        """Loads replay objects from directory"""
-        pass
