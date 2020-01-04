@@ -10,7 +10,7 @@ class Turk(commands.Bot):
         super().__init__(commands.when_mentioned_or('turk!'))
 
         ballchasing_token = os.environ.get('BCTOKEN', '<---- ENTER YOUR BALLCHASING TOKEN ---->')
-        self.ballchasing = Ballchasing(ballchasing_token)
+        self.bc = Ballchasing(ballchasing_token)
 
     async def load_all_cogs(self):
         for filename in os.listdir('core/cogs/'):

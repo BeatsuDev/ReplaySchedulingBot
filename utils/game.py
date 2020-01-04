@@ -6,14 +6,7 @@ from datetime import datetime
 from utils.player import Player
 
 class Game:
-    '''
-    Class representation of a Rocket League replay of a game.
-
-    Game()
-        .playlist
-        .date
-        .players  # Player objects
-    '''
+    """Class representation of a Rocket League replay of a game."""
     API = "https://ballchasing.com/api/"
     def __init__(self, ID, BC):
         headers = {}
@@ -62,21 +55,14 @@ class Game:
 
 
 class Replay(Game):
-    '''
-    Class representation of a Replay file uploaded to ballchasing.com.
+    """Class representation of a Replay file uploaded to ballchasing.com.
     Inherits from utils.game.Game()
-
-    Replay(Game)
-        .file
-        .link
-        .author
-        .uploader
-    '''
+    """
     API = "https://ballchasing.com/api/"
     def __init__(self, ID, BC, **kwargs):
         super().__init__(ID, BC)
         self.file = BC.download(ID)
         self.link = f'https://ballchasing/replay/{ID}'
-        self.author = kwargs.get('author', None)
+        self.author = kwargs.get('author')
         self.uploader = self.replaydata['uploader']
         self.title = self.replaydata['title']

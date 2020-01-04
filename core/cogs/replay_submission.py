@@ -14,52 +14,37 @@ Description:
     def __init__(self, bot):
         self.bot = bot
 
-    # Auto-detect form
-
-    @commands.Cog.listener()
-    async def on_message(self, msg):
-        if msg.author.bot: return
-
-
-        '''
-        if not len(msg.attachments): return
-
-        for f in msg.attachments:
-            # Weed out files other than .replay files
-            if not f.filename.endswith('.replay'): continue
-            if os.path.isfile(f'replays/{f.filename}'):
-                await msg.author.send('The file you sent is already submitted')
-                continue
-
-            # Save file and update file_checkout.json
-            await f.save(open(f'replays/{f.filename}', 'wb'))
-
-            # Upload to Ballchasing
-            await msg.author.send('Saved the replay file. Uploading to ballchasing...')
-            status, ID = self.bot.ballchasing.upload(open(f'replays/{f.filename}', 'rb'))
-
-            # Send user URL or Error message
-            if str(status).startswith("2"):
-                url = self.bot.ballchasing.BASE + f"replay/{ID}"
-                self.bot.ballchasing.file_checkout(f'replays/{f.filename}', ID)
-                await msg.author.send(url)
-            elif str(status).startswith("4"):
-                await msg.author.send(f'Could not upload file... Error: {ID}')
-                os.remove(f'replays/{f.filename}')
-        '''
+        # Users that have invoked the {prefix}form submit command and have
+        # 60 seconds to send a form and replays. To prevent double command invokes
+        self.waiting_for = []
 
     @commands.command()
-    async def form(self, ctx):
+    async def form(self, ctx, *args):
+        if len(args) > 0:
+            if args[0].lower()=='submit':
+                await self.submit(ctx)
+                return
+
         embed = discord.Embed(
-            title='**To submit a form, send it in this format:**',
-            description=self.FORM,
+            title=f'To submit a form, use the command `{self.bot.command_prefix(self.bot, ctx.message)}form submit`',
             colour=0xffff00)
 
         embed.set_author(
             icon_url=ctx.message.author.avatar_url,
             name=ctx.message.author.display_name + " is looking to submit a form!")
 
+        embed.set_footer(
+            icon_url='https://www.rtk-international.biz/images/Picto/RTK_Pictos_FormulairesServices.png',
+            text='Copy paste the form below')
+
         await ctx.channel.send(embed=embed)
+        await ctx.channel.send(self.FORM)
+
+    async def submit(ctx):
+        # Wait for form string message
+        # Retrieve form data
+        # Wait for replay files
+        # Store in DataBase
 
 
 def setup(bot):
