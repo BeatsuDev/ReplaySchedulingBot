@@ -50,11 +50,18 @@ Description:
 
     @commands.command()
     async def form(self, ctx):
-        embed = discord.Embed(desc=description, colour=0xffff00)
+        embed = discord.Embed(
+            title='**To submit a form, send it in this format:**',
+            description=self.FORM,
+            colour=0xffff00)
+
+        embed.set_author(
+            icon_url=ctx.message.author.avatar_url,
+            name=ctx.message.author.display_name + " is looking to submit a form!")
+
         await ctx.channel.send(embed=embed)
-        await ctx.channel.send(self.form)
 
 
 def setup(bot):
-    bot.add_cog(Test(bot))
-    print("[COG] Added cog Test")
+    bot.add_cog(ReplaySubmission(bot))
+    print("[COG] Added cog ReplaySubmission")

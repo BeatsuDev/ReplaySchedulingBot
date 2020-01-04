@@ -20,5 +20,8 @@ class Turk(commands.Bot):
 
 
     async def on_ready(self):
-        print("")
+        print(f'Logged in as {self.user.name}#{self.user.discriminator};',
+            f'connected to {len(self.users)} users through {len(self.guilds)} guilds!'
+            ' Invite with link',
+            '\nhttps://discordapp.com/api/oauth2/authorize?client_id=661378621436461056&permissions=124992&scope=bot')
         await self.load_all_cogs()
