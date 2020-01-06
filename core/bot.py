@@ -1,4 +1,4 @@
-import os
+import asyncio, os
 
 import discord
 from discord.ext import commands
@@ -11,6 +11,7 @@ class Turk(commands.Bot):
 
         ballchasing_token = os.environ.get('BCTOKEN', '<---- ENTER YOUR BALLCHASING TOKEN ---->')
         self.bc = Ballchasing(ballchasing_token)
+        self.loop = asyncio.get_event_loop()
 
     async def load_all_cogs(self):
         for filename in os.listdir('core/cogs/'):
