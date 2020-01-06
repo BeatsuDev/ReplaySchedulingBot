@@ -61,7 +61,7 @@ class Replay(Game):
     API = "https://ballchasing.com/api/"
     def __init__(self, ID, BC, **kwargs):
         super().__init__(ID, BC)
-        self.file = BC.download(ID)
+        if kwargs.get('download'): self.file = BC.download(ID)
         self.link = f'https://ballchasing/replay/{ID}'
         self.author = kwargs.get('author')
         self.uploader = self.replaydata['uploader']
