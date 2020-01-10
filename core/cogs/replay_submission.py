@@ -117,46 +117,47 @@ Description:
             try:
                 rp = await self.bot.wait_for('message', check=check, timeout=45)
             except asyncio.TimeoutError:
-                self.waiting_for.remove(ctx.member.id)
+                self.waiting_for.remove(ctx.author.id)
                 await ctx.send('Timed out')
                 return
 
             for f in rp.attachments:
                 if f.filename.endswith('.replay'):
                     # User has sent a .replay file: Process it here
-                    print(f'tempdir value: {tempdir}')
                     dir = tempdir+f.filename
 
                     await f.save(dir)
                     rid = self.bot.bc.upload(dir)[1]
                     os.remove(dir)
 
-                    downloadtask = self.bot.loop.create_task(self._ready_replay(rid))
+                    downloadtask = self.bot.loop.create_task(self._ready_replay(rid, author=ctx.author))
                     tasks.append(downloadtask)
 
+        await ctx.send("Awesome! Sit back and relax. The replays are being processed! I'll get back to you soon ;)")
         # Wait for every task to complete
         for task in tasks:
+            tout = 300
             try:
-                asyncio.wait_for(task, timeout=90)
+                await asyncio.wait_for(task, timeout=tout)
             except asyncio.TimeoutError:
-                await ctx.send(f'Failed to process within 90 seconds. Form submission cancelled! Please try again <@{ctx.author.id}>')
+                await ctx.send(f'Failed to process within {tout} seconds. Form submission cancelled! Please try again <@{ctx.author.id}>')
 
         # Tasks should be complete, so time to retrieve the results
         replays = [task.result() for task in tasks]
         return replays
 
 
-    async def _ready_replay(self, id, interval=5):
-        """Attempts to load a replay repeatedly until succesfull or after 120 seconds has gone.
+    async def _ready_replay(self, id, interval=15, author=None):
+        """Attempts to load a replay repeatedly until succesfull or after 300 seconds has gone.
         (Meant for giving ballchasing.com time to process the replay) In the future this should
         be error handled within Ballchasing.replay() directly."""
         ready = False
         start = time.time()
         while not ready:
-            if time.time()-start>120:
-                raise asyncio.TimeoutError
+            if time.time()-start>300:
+                raise asyncio.TimeoutError('Took over 5 minutes to process replays!')
             try:
-                replay = self.bot.bc.replay(id)
+                replay = self.bot.bc.replay(id, author=author)
                 ready = True
             except KeyError:
                 await asyncio.sleep(interval)
