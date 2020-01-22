@@ -17,6 +17,10 @@ class Game:
         self.players = self._get_players()
         self.date = datetime.strptime(self.replaydata.get('date'), '%Y-%m-%dT%H:%M:%SZ')
         self.playlist = self.replaydata.get('playlist_id')
+        self.duration = self.replaydata.get('duration')
+
+    def __len__(self):
+        return self.duration
 
 
     def _get_players(self):
