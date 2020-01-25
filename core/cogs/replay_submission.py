@@ -100,7 +100,7 @@ Description:
 
         self.waiting_for.remove(ctx.author.id)
         if valid:
-            self._store_replays(self, replays)
+            self._store_replays(form, replays)
             await ctx.author.send('Your replays have successfully been stored!')
             return
 
@@ -147,7 +147,7 @@ Description:
         return replays
 
 
-    async def _ready_replay(self, id, interval=15, author=None):
+    async def _ready_replay(self, id, interval=30, author=None):
         """Attempts to load a replay repeatedly until succesfull or after 300 seconds has gone.
         (Meant for giving ballchasing.com time to process the replay) In the future this should
         be error handled within Ballchasing.replay() directly."""
@@ -160,13 +160,20 @@ Description:
                 replay = self.bot.bc.replay(id, author=author)
                 ready = True
             except KeyError:
+                print()
                 await asyncio.sleep(interval)
         return replay
 
 
     async def _check_replays(self, replays, ctx, form):
         # Function to check if the user is allowed to upload; if the replays aren't ff's etc
-        # Should return (bool <valid>, str <error>)
+        # Should return (bool <valid>, str <error>), so f.ex: (True, None) or (False, "Early FF")
+        return (True, None)
+
+
+    def _store_replays(self, form, replays):
+        # form: "list should contain [in_game, twitch_name, region, description] in that order"
+        # replays = [Replay(), Replay()]
         pass
 
 

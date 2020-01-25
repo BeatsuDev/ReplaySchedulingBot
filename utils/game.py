@@ -1,6 +1,7 @@
 import requests
 import json
 import os
+import time
 
 from datetime import datetime
 from utils.player import Player
@@ -12,6 +13,11 @@ class Game:
         headers = {}
         headers['Authorization'] = os.environ.get('BCTOKEN', BC.token)
         replaydata = requests.get(self.API+'replays/'+ID, headers=headers)
+
+        with open('request_logs.txt', 'a+') as f:
+            f.write(f"ID ({ID})")
+            f.write(f"INCOMING DATA ({time.perf_counter()}):\n{replaydata.content}\n\n")
+
         self.replaydata = json.loads(replaydata.content)
         self.id = self.replaydata['id']
         self.players = self._get_players()
