@@ -47,4 +47,8 @@ class Ballchasing:
 
         if resp.ok:
             return resp.status_code, content['id']
+        elif resp.status_code == 409:
+            # Duplicate replays
+            return resp.status_code, content['id']
+
         return resp.status_code, content['error']

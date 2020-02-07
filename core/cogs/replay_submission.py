@@ -130,7 +130,6 @@ Description:
                     rid = self.bot.bc.upload(dir)[1]
                     # So this is the culprit of our mystery
                     # rid gets the value "duplicate replay" here....
-                    import pdb; pdb.set_trace()
                     os.remove(dir)
 
                     downloadtask = self.bot.loop.create_task(self._ready_replay(rid, author=ctx.author))
@@ -139,9 +138,9 @@ Description:
         await ctx.send("Awesome! Sit back and relax. The replays are being processed! I'll get back to you soon ;)")
         # Wait for every task to complete
         for task in tasks:
-            tout = 300
+            tout = 120
             try:
-                await asyncio.wait_for(task, timeout=tout)
+                await asyncio.wait_for(task, timeout=120)
             except asyncio.TimeoutError:
                 await ctx.send(f'Failed to process within {tout} seconds. Form submission cancelled! Please try again <@{ctx.author.id}>')
 
@@ -157,8 +156,8 @@ Description:
         ready = False
         start = time.time()
         while not ready:
-            if time.time()-start>300:
-                raise asyncio.TimeoutError('Took over 5 minutes to process replays!')
+            if time.time()-start>120:
+                raise asyncio.TimeoutError('Took over 2 minutes to process replays!')
             try:
                 replay = self.bot.bc.replay(id, author=author)
                 ready = True
@@ -168,7 +167,7 @@ Description:
         return replay
 
 
-    async def _check_replays(self, replays, ctx, form):
+    async def _check_replays(self, form, replays, ctx):
         # Function to check if the user is allowed to upload; if the replays aren't ff's etc
         # Should return (bool <valid>, str <error>), so f.ex: (True, None) or (False, "Early FF")
         return (True, None)
