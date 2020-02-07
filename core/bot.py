@@ -7,7 +7,7 @@ from utils.ballchasing import Ballchasing
 
 class Turk(commands.Bot):
     def __init__(self):
-        super().__init__(commands.when_mentioned_or('.'))
+        super().__init__(commands.when_mentioned_or('turk!'))
 
         ballchasing_token = os.environ.get('BCTOKEN', '<---- ENTER YOUR BALLCHASING TOKEN ---->')
         self.bc = Ballchasing(ballchasing_token)

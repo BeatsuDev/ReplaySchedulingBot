@@ -24,7 +24,6 @@ class Game:
     def __len__(self):
         return self.duration
 
-
     def _get_players(self):
         players = []
         for P in self.replaydata['blue']['players']:
