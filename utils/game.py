@@ -1,30 +1,28 @@
 import requests
 import json
 import os
+import time
 
 from datetime import datetime
 from utils.player import Player
 
 class Game:
-    '''
-    Class representation of a Rocket League replay of a game.
-
-    Game()
-        .playlist
-        .date
-        .players  # Player objects
-    '''
+    """Class representation of a Rocket League replay of a game."""
     API = "https://ballchasing.com/api/"
     def __init__(self, ID, BC):
         headers = {}
         headers['Authorization'] = os.environ.get('BCTOKEN', BC.token)
         replaydata = requests.get(self.API+'replays/'+ID, headers=headers)
+
         self.replaydata = json.loads(replaydata.content)
         self.id = self.replaydata['id']
         self.players = self._get_players()
         self.date = datetime.strptime(self.replaydata.get('date'), '%Y-%m-%dT%H:%M:%SZ')
         self.playlist = self.replaydata.get('playlist_id')
+        self.duration = self.replaydata.get('duration')
 
+    def __len__(self):
+        return self.duration
 
     def _get_players(self):
         players = []
@@ -37,8 +35,9 @@ class Game:
                 "score": P['stats']['core']['score'],
                 "goals": P['stats']['core']['goals'],
                 "saves": P['stats']['core']['saves'],
-                "camera": P.get('camera', None),
-                "rank": P.get('rank')
+                "camera": P.get('camera'),
+                "rank": P.get('rank'),
+                "platform": P['id']['platform']
             }
             p = Player(**kwargs)
             players.append(p)
@@ -61,21 +60,14 @@ class Game:
 
 
 class Replay(Game):
-    '''
-    Class representation of a Replay file uploaded to ballchasing.com.
+    """Class representation of a Replay file uploaded to ballchasing.com.
     Inherits from utils.game.Game()
-
-    Replay(Game)
-        .file
-        .link
-        .author
-        .uploader
-    '''
+    """
     API = "https://ballchasing.com/api/"
     def __init__(self, ID, BC, **kwargs):
         super().__init__(ID, BC)
-        self.file = BC.download(ID)
+        if kwargs.get('download'): self.file = BC.download(ID)
         self.link = f'https://ballchasing/replay/{ID}'
-        self.author = kwargs.get('author', None)
+        self.author = kwargs.get('author')
         self.uploader = self.replaydata['uploader']
         self.title = self.replaydata['title']

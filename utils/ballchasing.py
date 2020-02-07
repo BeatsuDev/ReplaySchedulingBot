@@ -39,9 +39,16 @@ class Ballchasing:
         headers = {}
         headers['Authorization'] = self.token
 
+        if type(file) == str:
+            file = open(file, 'rb')
+
         resp = requests.post(post_url, headers=headers, files={'file': file})
         content = json.loads(resp.content)
 
         if resp.ok:
             return resp.status_code, content['id']
+        elif resp.status_code == 409:
+            # Duplicate replays
+            return resp.status_code, content['id']
+      
         return resp.status_code, content['error']
