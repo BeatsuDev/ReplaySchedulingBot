@@ -17,6 +17,7 @@ class Game:
         with open('request_logs.txt', 'a+') as f:
             f.write(f"ID ({ID})")
             f.write(f"INCOMING DATA ({time.perf_counter()}):\n{replaydata.content}\n\n")
+        import pdb; pdb.set_trace()
 
         self.replaydata = json.loads(replaydata.content)
         self.id = self.replaydata['id']

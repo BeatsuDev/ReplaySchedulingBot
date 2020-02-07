@@ -128,6 +128,9 @@ Description:
 
                     await f.save(dir)
                     rid = self.bot.bc.upload(dir)[1]
+                    # So this is the culprit of our mystery
+                    # rid gets the value "duplicate replay" here....
+                    import pdb; pdb.set_trace()
                     os.remove(dir)
 
                     downloadtask = self.bot.loop.create_task(self._ready_replay(rid, author=ctx.author))
