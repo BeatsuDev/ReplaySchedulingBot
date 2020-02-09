@@ -14,12 +14,19 @@ class Game:
         headers['Authorization'] = os.environ.get('BCTOKEN', BC.token)
         replaydata = requests.get(self.API+'replays/'+ID, headers=headers)
 
+        if BC.logger:
+            BC.logger.debug(f"[Game Instanciating] GET request to {self.API}replays/{ID} with headers: {headers}")
+            BC.logger.debug(f"[Game Instanciating] Responded with: [{replaydata.status_code}]\n{replaydata.content}")
+
         self.replaydata = json.loads(replaydata.content)
         self.id = self.replaydata['id']
         self.players = self._get_players()
         self.date = datetime.strptime(self.replaydata.get('date'), '%Y-%m-%dT%H:%M:%SZ')
         self.playlist = self.replaydata.get('playlist_id')
         self.duration = self.replaydata.get('duration')
+
+        if BC.logger:
+            BC.logger.debug()
 
     def __len__(self):
         return self.duration
@@ -74,6 +81,11 @@ class Replay(Game):
         self.author = kwargs.get('author')
         self.uploader = self.replaydata['uploader']
         self.title = self.replaydata['title']
+
+        if BC.logger:
+            if self.file: BC.logger(f"Replay was downloaded for replay with ID: {ID}")
+            BC.logger.debug(f"Replay instance created for replay with ID: {ID}")
+            BC.logger.debug(f"Author: {self.author}; Title: {self.title}; Uploader: {self.uploader}")
 
     def download(self, **kwargs):
         """Downloads the replay file and returns directory to file as a string"""

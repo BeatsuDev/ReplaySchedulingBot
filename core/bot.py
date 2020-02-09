@@ -17,6 +17,7 @@ class Turk(commands.Bot):
         for filename in os.listdir('core/cogs/'):
             if filename.endswith('.py'):
                 self.load_extension(f'core.cogs.{filename[:-3]}')
+                if self.logger: self.logger.debug(f"Loaded bot extension core.cogs.{filename[:-3]}")
 
 
 

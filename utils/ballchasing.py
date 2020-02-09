@@ -14,7 +14,9 @@ class Ballchasing:
     BASE = "https://ballchasing.com/"
     def __init__(self, token, **kwargs):
         self.token = token
-        kwargs.get('directory', 'replays')
+        self.logger = kwargs.get('logger')
+        if self.logger:
+            self.logger.debug(f"Created instance of Ballchasing class: {self}")
 
     def replay(self, ID, output_file='replays/', **kwargs):
         """Downloads the replay with the given ID and returns a Replay object"""
@@ -25,9 +27,14 @@ class Ballchasing:
         """Downloads a replay file from ballchasing"""
         if not name: name = ID
         resp = requests.post(self.BASE + "/dl/replay/" + ID)
+        if self.logger:
+            self.logger.debug(f"[Replay Download] Posted to URL \"{self.BASE}/dl/replay/{ID}\".")
+            self.logger.debug(f"[Replay Download] Status code: {resp.status_code}")
 
         with open(output_dir+name+'.replay', 'wb') as f:
-            f.write(resp.content)
+            bytes = f.write(resp.content)
+            if self.logger:
+                self.logger.debug(f"[Replay Download] Wrote {bytes} bytes of data to \"{output_dir}{name}.replay\" for replay with ID: {ID}")
 
         return output_dir+name+'.replay'
 
@@ -44,6 +51,10 @@ class Ballchasing:
 
         resp = requests.post(post_url, headers=headers, files={'file': file})
         content = json.loads(resp.content)
+
+        if self.logger:
+            self.logger.debug(f"[Replay Upload] Posted to {post_url} with headers {headers} and file {file}")
+            self.logger.debug(f"[Replay Upload] Requests responded with: [{resp.status_code}]\n{resp.content}")
 
         if resp.ok:
             return resp.status_code, content['id']
