@@ -21,15 +21,15 @@ class Ballchasing:
         return Replay(ID, self, **kwargs)
 
 
-    def download(self, ID, output_file='replays/', name=None):
+    def download(self, ID, output_dir='replays/', name=None):
         """Downloads a replay file from ballchasing"""
         if not name: name = ID
         resp = requests.post(self.BASE + "/dl/replay/" + ID)
 
-        with open(output_file+name+'.replay', 'wb') as f:
+        with open(output_dir+name+'.replay', 'wb') as f:
             f.write(resp.content)
 
-        return output_file+name+'.replay'
+        return output_dir+name+'.replay'
 
     def upload(self, file):
         """Uploads a file to ballchasing. Returns a tuple with status code and replay ID.
@@ -50,5 +50,5 @@ class Ballchasing:
         elif resp.status_code == 409:
             # Duplicate replays
             return resp.status_code, content['id']
-      
+
         return resp.status_code, content['error']

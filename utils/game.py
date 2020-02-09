@@ -66,8 +66,18 @@ class Replay(Game):
     API = "https://ballchasing.com/api/"
     def __init__(self, ID, BC, **kwargs):
         super().__init__(ID, BC)
+        self.ID = ID
+        self.file = 0
+
         if kwargs.get('download'): self.file = BC.download(ID)
         self.link = f'https://ballchasing/replay/{ID}'
         self.author = kwargs.get('author')
         self.uploader = self.replaydata['uploader']
         self.title = self.replaydata['title']
+
+    def download(self, **kwargs):
+        """Downloads the replay file and returns directory to file as a string"""
+        if self.file: return self.file
+
+        self.file = BC.download(self.ID, **kwargs)
+        return self.file
