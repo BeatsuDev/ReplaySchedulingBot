@@ -5,12 +5,11 @@ from discord.ext import commands
 
 class ReplaySubmission(commands.Cog):
     """Cog for Replay Submissions"""
-    FORM = '''
-In-game name:
-Twitch name:
-Region:
-Description:
-'''[1:-1]
+    FORM = ('In-game name:\n'
+            'Twitch name:\n'
+            'Region:\n'
+            'Description:')
+            
     def __init__(self, bot):
         self.bot = bot
 
