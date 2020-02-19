@@ -54,12 +54,17 @@ class Ballchasing:
 
         if self.logger:
             self.logger.debug(f"[Replay Upload] Posted to {post_url} with headers {headers} and file {file}")
-            self.logger.debug(f"[Replay Upload] Requests responded with: [{resp.status_code}]\n{resp.content}")
+            self.logger.debug(f"[Replay Upload] Requests responded with:\n[{resp.status_code}]\n{resp.content}")
 
         if resp.ok:
-            return resp.status_code, content['id']
-        elif resp.status_code == 409:
-            # Duplicate replays
+            if self.logger: self.logger.info(f"[Replay Upload] Successfully uploaded {file}")
             return resp.status_code, content['id']
 
+        elif resp.status_code == 409:
+            # Duplicate replays
+            if self.logger: self.logger.info(f"[Replay Upload] {file} is already uploaded. (Duplicate)")
+            return resp.status_code, content['id']
+
+
+        if self.logger: self.logger.warning(f"[Replay Upload] Unknown error when uploading {file}")
         return resp.status_code, content['error']
