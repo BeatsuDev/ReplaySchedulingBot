@@ -9,7 +9,7 @@ class ReplaySubmission(commands.Cog):
             'Twitch name:\n'
             'Region:\n'
             'Description:')
-            
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -80,6 +80,7 @@ class ReplaySubmission(commands.Cog):
         await ctx.send("Now for the files! Please send both replay files!")
         replays = await self._retrieve_replays(ctx)
         valid, error = await self._check_replays(replays, ctx, form)
+        if self.logger: self.logger.debug(f'Checked replays. Error: {error}')
 
         self.waiting_for.remove(ctx.author.id)
         if valid:
@@ -190,8 +191,27 @@ class ReplaySubmission(commands.Cog):
 
 
     async def _check_replays(self, form, replays, ctx):
+        # form: "list should contain [in_game, twitch_name, region, description] in that order"
         # Function to check if the user is allowed to upload; if the replays aren't ff's etc
         # Should return (bool <valid>, str <error>), so f.ex: (True, None) or (False, "Early FF")
+        for r in replays:
+            if not form[0] in r.players:
+                if not form[0] in [p.steam for p in r.players]:
+                    return (False,
+                        (f"Player {form[0]} wasn't found in the replay. These folks are in the replay: "
+                        f"{r.players}; If you *really* are in this replay, try providing your steam ID "
+                        f"instead of `in-game name` in your form"))
+
+            if not r.playlist in ['ranked-standard', 'ranked-solo-standard', 'ranked-doubles', 'ranked-duels']:
+                return (False, "Not a ranked 1s, 2s or 3s match")
+            if len(r) < 270: return (False, "Early FF (Shorter than 4:30, including goal animation time)")
+            if sum([p.goals for p in r.players if p.team == 'orange']) - sum([p.goals for p in r.players if p.team == 'blue']) > 5:
+                msg = await ctx.send('The goal difference is really high! Sure you want to send in these replays?')
+                await msg.add_reaction('✔️')
+                await msg.add_reaction('❌')
+                check = lambda r, u: (str(r) == '❌' or str(r) == '✔️') and u.id == ctx.author.id and r.message.id == msg.id
+                r, u = await self.bot.wait_for('reaction', check=check)
+                return (True, None) if str(r) == '✔️' else (False, 'Large goal difference')
         return (True, None)
 
 
