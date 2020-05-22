@@ -12,6 +12,7 @@ class ReplaySubmission(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.logger = self.bot.logger
 
         # Users that have invoked the {prefix}form submit command and have
         # 60 seconds to send a form and replays. To prevent double command invokes
@@ -20,14 +21,14 @@ class ReplaySubmission(commands.Cog):
     @commands.command()
     async def form(self, ctx, *args):
         # If the bot is already waiting for the user to send the form; return
-        if self.bot.logger: self.bot.logger.debug(f'{ctx.author.id} issued the `form` command')
+        if self.logger: self.logger.debug(f'{ctx.author.id} issued the `form` command')
         if ctx.author.id in self.waiting_for: return
         if len(args) > 0:
 
             # `form submit` command
             if args[0].lower()=='submit':
                 if not type(ctx.channel) == discord.DMChannel:
-                    if self.bot.logger: self.bot.logger.debug(f'{ctx.author.id} `form submit` command was not in a DM')
+                    if self.logger: self.logger.debug(f'{ctx.author.id} `form submit` command was not in a DM')
                     await ctx.send('Send your form in DMs!')
                     return
 
@@ -64,7 +65,7 @@ class ReplaySubmission(commands.Cog):
             form = await self.bot.wait_for('message', check=check, timeout=60)
             if self.logger: self.logger.debug(f'Recieved form from {ctx.author.name}#{ctx.author.discriminator}')
         except asyncio.TimeoutError:
-            self.waiting_for.remove(ctx.member.id)
+            self.waiting_for.remove(ctx.author.id)
             await ctx.send('Timed out')
             return
 
@@ -72,14 +73,14 @@ class ReplaySubmission(commands.Cog):
             form = self._from_format(form.content)
             if self.logger: self.logger.debug(f'Successfully retrieved form data: {form}')
         except ValueError as e:
-            if self.logger: self.logger.debug(f'Error during processing of {ctx.author.name}\'s form: {e}')
-            self.waiting_for.remove(ctx.member.id)
+            if self.error: self.logger.warning(f'Error during processing of {ctx.author.name}\'s form: {e}')
+            self.waiting_for.remove(ctx.author.id)
             await ctx.send("Couldn't retrieve data from the provided form! Make sure you have copy pasted the form!")
             return
 
         await ctx.send("Now for the files! Please send both replay files!")
         replays = await self._retrieve_replays(ctx)
-        valid, error = await self._check_replays(replays, ctx, form)
+        valid, error = await self._check_replays(form, replays, ctx)
         if self.logger: self.logger.debug(f'Checked replays. Error: {error}')
 
         self.waiting_for.remove(ctx.author.id)
@@ -87,12 +88,12 @@ class ReplaySubmission(commands.Cog):
             self._store_replays(form, replays)
             if self.logger: self.logger.info(f'{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id}) stored 2 replays')
             await ctx.author.send('Your replays have successfully been stored!')
-            self.waiting_for.remove(ctx.member.id)
+            self.waiting_for.remove(ctx.author.id)
             return
 
         else:
             await ctx.author.send(f"Your replay wasn't accepted for the following reason: {error}")
-            self.waiting_for.remove(ctx.member.id)
+            self.waiting_for.remove(ctx.author.id)
             return
 
 
@@ -119,7 +120,9 @@ class ReplaySubmission(commands.Cog):
 
         # Return a list; length should be the same as the length of regexps
         # The list should contain [in_game, twitch_name, region, description] in that order
-        return [m.group(1).strip() for m in matches]
+        form_data = [m.group(1).strip() for m in matches]
+        if not len(form_data) == len(regexps): raise ValueError('All values not extracted')
+        return form_data
 
 
     async def _retrieve_replays(self, ctx, tempdir='replays/'):
@@ -156,7 +159,7 @@ class ReplaySubmission(commands.Cog):
             tout = 120
             try:
                 if self.logger: self.logger.debug(f'Attempting to get Replay object from submitted files. Running task: {task}')
-                await asyncio.wait_for(task, timeout=120)
+                await asyncio.wait_for(task, timeout=tout)
                 if self.logger: self.logger.debug(f'Completed {task}')
 
             except asyncio.TimeoutError:
@@ -185,7 +188,7 @@ class ReplaySubmission(commands.Cog):
                 ready = True
             except KeyError as e:
                 # The KeyError arises within the self.bot.bc.replay() function and shouldn't really be handled here
-                if self.logger: self.logger.debug(f'Failed to get replay from ballchasing with ID: {id} | Error: {e}')
+                if self.logger: self.logger.warning(f'Failed to get replay from ballchasing with ID: {id} | Error: {e}')
                 await asyncio.sleep(interval)
         return replay
 
@@ -195,11 +198,11 @@ class ReplaySubmission(commands.Cog):
         # Function to check if the user is allowed to upload; if the replays aren't ff's etc
         # Should return (bool <valid>, str <error>), so f.ex: (True, None) or (False, "Early FF")
         for r in replays:
-            if not form[0] in r.players:
+            if not form[0] in [p.name for p in r.players]:
                 if not form[0] in [p.steam for p in r.players]:
                     return (False,
                         (f"Player {form[0]} wasn't found in the replay. These folks are in the replay: "
-                        f"{r.players}; If you *really* are in this replay, try providing your steam ID "
+                        f"{[p.name for p in r.players]}; If you *really* are in this replay, try providing your steam ID "
                         f"instead of `in-game name` in your form"))
 
             if not r.playlist in ['ranked-standard', 'ranked-solo-standard', 'ranked-doubles', 'ranked-duels']:

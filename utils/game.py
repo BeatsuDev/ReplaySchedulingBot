@@ -26,7 +26,7 @@ class Game:
         self.duration = self.replaydata.get('duration')
 
         if BC.logger:
-            BC.logger.debug()
+            BC.logger.debug(f'[Game Instanciating] Fully instanciated game object: {self}!')
 
     def __len__(self):
         return self.duration
