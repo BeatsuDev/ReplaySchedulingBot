@@ -1,5 +1,6 @@
 import asyncio, os
 
+import dataset
 import discord
 from discord.ext import commands
 
@@ -22,6 +23,8 @@ class Turk(commands.Bot):
         self.logger = Logger
         self.logger.warning('PLEASE WORK FFS')
         self.loop = asyncio.get_event_loop()
+
+        self.db = dataset.connect('sqlite:///mainDB.db')
 
     async def load_all_cogs(self):
         for filename in os.listdir('core/cogs/'):

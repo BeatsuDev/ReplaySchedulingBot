@@ -8,6 +8,7 @@ verify_ssl = true
 [packages]
 discord-py = "*"
 requests = "*"
+dataset = "*"
 
 [requires]
 python_version = "3.8"

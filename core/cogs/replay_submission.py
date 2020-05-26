@@ -85,10 +85,9 @@ class ReplaySubmission(commands.Cog):
 
         self.waiting_for.remove(ctx.author.id)
         if valid:
-            self._store_replays(form, replays)
+            self._store_replays(ctx.author, form, replays)
             if self.logger: self.logger.info(f'{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id}) stored 2 replays')
             await ctx.author.send('Your replays have successfully been stored!')
-            self.waiting_for.remove(ctx.author.id)
             return
 
         else:
@@ -218,10 +217,28 @@ class ReplaySubmission(commands.Cog):
         return (True, None)
 
 
-    def _store_replays(self, form, replays):
+    def _store_replays(self, discord_user, form, replays):
         # form: "list should contain [in_game, twitch_name, region, description] in that order"
         # replays = [Replay(), Replay()]
-        pass
+        user = self.bot.db['user'].upsert(dict(
+            id=discord_user.id,
+            game_name=form[0],
+            twitch_name=form[1],
+            region=form[2]
+        ), keys=dict(id=discord_user.id))
+        self.logger.info(f'Updated user {discord_user.name}#{discord_user.discriminator} in the database')
+
+        self.bot.db['entry'].insert(dict(
+            user = discord_user.id,
+            added = time.time(),
+            update = 0,
+            analyzed = 0,
+            replay1 = replays[0].ID,
+            replay2 = replays[1].ID,
+            rank = [p for p in replays[0].players if p.name == form[0]][0].rank,
+            description = form[3]
+        ))
+        self.logger.info(f'Added replay schedule entry for the discord user {discord_user.name}#{discord_user.discriminator}')
 
 
 def setup(bot):
