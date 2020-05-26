@@ -220,7 +220,7 @@ class ReplaySubmission(commands.Cog):
     def _store_replays(self, discord_user, form, replays):
         # form: "list should contain [in_game, twitch_name, region, description] in that order"
         # replays = [Replay(), Replay()]
-        user = self.bot.db['user'].upsert(dict(
+        user = self.bot.db['users'].upsert(dict(
             id=discord_user.id,
             game_name=form[0],
             twitch_name=form[1],
@@ -228,8 +228,8 @@ class ReplaySubmission(commands.Cog):
         ), keys=dict(id=discord_user.id))
         self.logger.info(f'Updated user {discord_user.name}#{discord_user.discriminator} in the database')
 
-        self.bot.db['entry'].insert(dict(
-            user = discord_user.id,
+        self.bot.db['entries'].insert(dict(
+            userid = discord_user.id,
             added = time.time(),
             update = 0,
             analyzed = 0,

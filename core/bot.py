@@ -25,6 +25,8 @@ class Turk(commands.Bot):
         self.loop = asyncio.get_event_loop()
 
         self.db = dataset.connect('sqlite:///mainDB.db')
+        self.db.create_table('users', primary_id='userid')
+        self.db.create_table('entries')
 
     async def load_all_cogs(self):
         for filename in os.listdir('core/cogs/'):
