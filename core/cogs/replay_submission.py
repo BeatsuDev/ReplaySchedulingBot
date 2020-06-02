@@ -59,6 +59,8 @@ class ReplaySubmission(commands.Cog):
 
     async def _submit(self, ctx):
         """Submit command"""
+
+        # Wait for form
         check = lambda m: m.author.id == ctx.author.id
         try:
             self.waiting_for.append(ctx.author.id)
@@ -69,6 +71,8 @@ class ReplaySubmission(commands.Cog):
             await ctx.send('Timed out')
             return
 
+
+        # Retrieve data from form
         try:
             form = self._from_format(form.content)
             if self.logger: self.logger.debug(f'Successfully retrieved form data: {form}')
@@ -78,12 +82,16 @@ class ReplaySubmission(commands.Cog):
             await ctx.send("Couldn't retrieve data from the provided form! Make sure you have copy pasted the form!")
             return
 
+
+        # Receive files & check files
         await ctx.send("Now for the files! Please send both replay files!")
         replays = await self._retrieve_replays(ctx)
         valid, error = await self._check_replays(form, replays, ctx)
         if self.logger: self.logger.debug(f'Checked replays. Error: {error}')
 
         self.waiting_for.remove(ctx.author.id)
+
+        # Check if valid & store replays
         if valid:
             self._store_replays(ctx.author, form, replays)
             if self.logger: self.logger.info(f'{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id}) stored 2 replays')
