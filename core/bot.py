@@ -27,6 +27,8 @@ class Turk(commands.Bot):
         self.db = dataset.connect('sqlite:///mainDB.db')
         self.db.create_table('users', primary_id='userid')
         self.db.create_table('entries')
+        self.db.create_table('waiting')
+        self.db.create_table('scheduled')
 
     async def load_all_cogs(self):
         for filename in os.listdir('core/cogs/'):
