@@ -117,8 +117,6 @@ async def retrieve_replays(ctx, bot, guimsg, line):
     return replays
 
 
-
-
 async def _ready_replay(id, bot, interval=30, author=None):
     """Attempts to load a replay repeatedly until succesfull or after 300 seconds has gone.
     (Meant for giving ballchasing.com time to process the replay) In the future this should
@@ -136,3 +134,27 @@ async def _ready_replay(id, bot, interval=30, author=None):
             if bot.logger: bot.logger.warning(f'Failed to get replay from ballchasing with ID: {id} | Error: {e}')
             await asyncio.sleep(interval)
     return replay
+
+
+async def set_replay_info(ctx, guimsg, startline, replay1, replay2, in_game):
+    await _set_pending(guimsg, startline)
+    await _set_pending(guimsg, startline+1)
+    await _set_pending(guimsg, startline+2)
+
+    playlist = replay1.playlist
+
+    newembed = embed_desc_al(guimsg.embeds[0], startline, f"| {playlist}")
+    await guimsg.edit(embed= newembed)
+
+    rank = None
+    platform = None
+    for player in replay1.players:
+        if player.name == in_game:
+            rank = player.rank
+            platform = player.platform
+
+    newembed = embed_desc_al(newembed, startline+1, f"| {rank}")
+    newembed = embed_desc_al(newembed, startline+2, f"| {platform}")
+    await guimsg.edit(embed=newembed)
+
+    return playlist, rank, platform

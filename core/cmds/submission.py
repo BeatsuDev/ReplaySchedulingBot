@@ -1,6 +1,9 @@
+import time
+
 import discord
 
-from utils.submission.processes import retrieve_ingame, retrieve_twitch, retrieve_region, retrieve_desc, retrieve_replays
+from utils.submission.processes import retrieve_ingame, retrieve_twitch, retrieve_region
+from utils.submission.processes import retrieve_desc, retrieve_replays, set_replay_info
 from utils.submission.errors import *
 from utils.submission.gui import embed_desc_al
 
@@ -32,23 +35,25 @@ async def form(ctx, bot):
     region = await retrieve_region(ctx, guimsg, 3)
     desc = await retrieve_desc(ctx, guimsg, 4)
     replay1, replay2 = await retrieve_replays(ctx, bot, guimsg, 5)
-    await set_replay_info(ctx, guimsg, 6, replay1, replay2)
+
 
     #except Exception as e:
     #    await ctx.send(f'Error: {e}')
     #    bot.db['waiting'].delete(userid=ctx.author.id)
     #    return
 
-    valid, error = await _check_replays([ingame_name, twitch_name, region, desc], [replay1, replay2], ctx, bot)
+    form = [ingame_name, twitch_name, region, desc]
+    replays = [replay1, replay2]
+
+    valid, error = await _check_replays(form, replays, ctx, bot)
     if bot.logger: bot.logger.debug(f'Checked replays. Error: {error}')
 
     # Check if valid & store replays
     if valid:
+        playlist, rank, platform = await set_replay_info(ctx, guimsg, 7, replay1, replay2, ingame_name)
+
         _store_replays(ctx.author, form, replays, bot)
         if bot.logger: bot.logger.info(f'{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id}) stored 2 replays')
-        newembed = embed_desc_al(guimsg.embeds[0], 7, '| Accepted')
-        newembed = embed_desc_al(newembed, 8, '| Accepted')
-        newembed = embed_desc_al(newembed, 9, '| Accepted')
         await ctx.author.send('Your replays have successfully been stored!')
         return
 
@@ -56,7 +61,7 @@ async def form(ctx, bot):
         await ctx.author.send(f"Your replay wasn't accepted for the following reason: {error}")
         return
 
-async def _check_replays(form, replays, ctx):
+async def _check_replays(form, replays, ctx, bot):
     # form: "list should contain [in_game, twitch_name, region, description] in that order"
     # Function to check if the user is allowed to upload; if the replays aren't ff's etc
     # Should return (bool <valid>, str <error>), so f.ex: (True, None) or (False, "Early FF")
