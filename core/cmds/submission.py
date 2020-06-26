@@ -2,9 +2,9 @@ from utils.submission import processes
 from utils.submission.errors import *
 from utils.submission.gui import embed_desc_al
 
-async def form(ctx):
+async def form(ctx, bot):
     desc = (
-        "✔️ Discord name | {}#{}".format(ctx.author.name, ctx.author.discriminator)
+        f"✔️ Discord name | {ctx.author.name}#{ctx.author.discriminator}"
         "⭕ In-game name\n"
         "⭕ Twitch Name\n"
         "⭕ Region\n"
@@ -16,7 +16,7 @@ async def form(ctx):
         "⭕ Platform\n"
     )
 
-    turk = await self.bot.fetch_user(241993639117586452)
+    turk = await bot.fetch_user(241993639117586452)
     c = ctx.author.colour if not ctx.author.colour.value == 0x000 else 0xffff00
 
     gui = discord.Embed(colour=c, description=desc)
@@ -34,16 +34,16 @@ async def form(ctx):
 
     except Exception as e:
         await ctx.send(f'Error: {e}')
-        self.db['waiting'].delete(userid=ctx.author.id)
+        bot.db['waiting'].delete(userid=ctx.author.id)
         return
 
-    valid, error = await _check_replays([ingame_name, twitch_name, region, desc], [replay1, replay2], ctx)
-    if self.logger: self.logger.debug(f'Checked replays. Error: {error}')
+    valid, error = await _check_replays([ingame_name, twitch_name, region, desc], [replay1, replay2], ctx, bot)
+    if bot.logger: bot.logger.debug(f'Checked replays. Error: {error}')
 
     # Check if valid & store replays
     if valid:
-        self._store_replays(ctx.author, form, replays)
-        if self.logger: self.logger.info(f'{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id}) stored 2 replays')
+        _store_replays(ctx.author, form, replays, bot)
+        if bot.logger: bot.logger.info(f'{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id}) stored 2 replays')
         newembed = embed_desc_al(guimsg.embeds[0], 7, '| Accepted')
         newembed = embed_desc_al(newembed, 8, '| Accepted')
         newembed = embed_desc_al(newembed, 9, '| Accepted')
@@ -54,7 +54,7 @@ async def form(ctx):
         await ctx.author.send(f"Your replay wasn't accepted for the following reason: {error}")
         return
 
-async def _check_replays(self, form, replays, ctx):
+async def _check_replays(form, replays, ctx):
     # form: "list should contain [in_game, twitch_name, region, description] in that order"
     # Function to check if the user is allowed to upload; if the replays aren't ff's etc
     # Should return (bool <valid>, str <error>), so f.ex: (True, None) or (False, "Early FF")
@@ -74,23 +74,23 @@ async def _check_replays(self, form, replays, ctx):
             await msg.add_reaction('✔️')
             await msg.add_reaction('❌')
             check = lambda r, u: (str(r) == '❌' or str(r) == '✔️') and u.id == ctx.author.id and r.message.id == msg.id
-            r, u = await self.bot.wait_for('reaction', check=check)
+            r, u = await bot.wait_for('reaction', check=check)
             return (True, None) if str(r) == '✔️' else (False, 'Large goal difference')
     return (True, None)
 
 
-def _store_replays(self, discord_user, form, replays):
+def _store_replays(discord_user, form, replays, bot):
     # form: "list should contain [in_game, twitch_name, region, description] in that order"
     # replays = [Replay(), Replay()]
-    user = self.bot.db['users'].upsert(dict(
+    user = bot.db['users'].upsert(dict(
         id=discord_user.id,
         game_name=form[0],
         twitch_name=form[1],
         region=form[2]
     ), keys=dict(id=discord_user.id))
-    self.logger.info(f'Updated user {discord_user.name}#{discord_user.discriminator} in the database')
+    bot.logger.info(f'Updated user {discord_user.name}#{discord_user.discriminator} in the database')
 
-    self.bot.db['entries'].insert(dict(
+    bot.db['entries'].insert(dict(
         userid = discord_user.id,
         added = time.time(),
         update = 0,
@@ -100,4 +100,4 @@ def _store_replays(self, discord_user, form, replays):
         rank = [p for p in replays[0].players if p.name == form[0]][0].rank,
         description = form[3]
     ))
-    self.logger.info(f'Added replay schedule entry for the discord user {discord_user.name}#{discord_user.discriminator}')
+    bot.logger.info(f'Added replay schedule entry for the discord user {discord_user.name}#{discord_user.discriminator}')

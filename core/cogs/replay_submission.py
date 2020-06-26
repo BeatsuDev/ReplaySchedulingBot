@@ -3,7 +3,7 @@ import os, re, time, asyncio
 import discord
 from discord.ext import commands
 
-from core import cmds
+from core.cmds import submission
 from utils.submission.checks import *
 
 
@@ -29,7 +29,7 @@ class ReplaySubmission(commands.Cog):
             await ctx.send('This command can only be issued in DMs')
             return
 
-        await cmds.submission.form(ctx)
+        await submission.form(ctx, bot)
 
 
 def setup(bot):
