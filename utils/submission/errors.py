@@ -1,4 +1,5 @@
 class DiscordIdNotSetError(Exception):
     pass
 
-class 
+class AlreadyChangedError(Exception):
+    pass

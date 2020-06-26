@@ -29,7 +29,7 @@ class ReplaySubmission(commands.Cog):
             await ctx.send('This command can only be issued in DMs')
             return
 
-
+        await cmds.submission.form(ctx)
 
 
 def setup(bot):
