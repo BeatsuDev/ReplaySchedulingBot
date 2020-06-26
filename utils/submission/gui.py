@@ -7,10 +7,10 @@ def embed_desc_al(embed, line, append):
     '''
     lines = embed.description.split('\n')
 
-    if lines[line][0] == '✔️':
+    if lines[line][0] == '✅':
         raise AlreadyChangedError("The line has already been changed to \"Completed\"")
 
-    lines[line][0] = '✔️'
+    lines[line] = '✅' + lines[line][1:]
     lines[line] += ' ' + append
 
     embed.description = '\n'.join(lines)

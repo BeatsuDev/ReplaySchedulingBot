@@ -1,4 +1,4 @@
-import asyncio
+import asyncio, os, time
 from utils.submission.gui import embed_desc_al
 from utils.submission.errors import *
 
@@ -7,17 +7,17 @@ async def _set_pending(guimsg, line):
     embed = guimsg.embeds[0]
     lines = embed.description.split('\n')
 
-    if lines[line][0] == '✔️':
+    if lines[line][0] == '✅':
         raise AlreadyChangedError("The line has already been changed to \"Completed\"")
 
-    lines[line][0] = '🔄'
+    lines[line] = '🔄' + lines[line][1:]
     embed.description = '\n'.join(lines)
     await guimsg.edit(embed=embed)
 
 async def retrieve_ingame(ctx, guimsg, line):
     # Ask and set pending
     await _set_pending(guimsg, line)
-    await ctx.send("What's your IGN (In-game name)? This will be checked later")
+    qmsg = await ctx.send("What's your IGN (In-game name)? This will be checked later")
 
     # Answer message
     check = lambda msg: msg.author == ctx.author
@@ -26,46 +26,55 @@ async def retrieve_ingame(ctx, guimsg, line):
     # Finished, now set the embed line to finished
     newembed = embed_desc_al(guimsg.embeds[0], line, f"| {answermsg.content.strip()}")
     await guimsg.edit(embed=newembed)
+
+    await qmsg.delete()
     return answermsg.content.strip()
 
 async def retrieve_twitch(ctx, guimsg, line):
     # Ask and set pending
     await _set_pending(guimsg, line)
-    await ctx.send("What's your name Twitch?")
+    qmsg = await ctx.send("What's your name Twitch?")
 
     check = lambda msg: msg.author == ctx.author
     answermsg = await ctx.bot.wait_for('message', check=check)
 
     newembed = embed_desc_al(guimsg.embeds[0], line, f"| {answermsg.content.strip()}")
     await guimsg.edit(embed=newembed)
+
+    await qmsg.delete()
     return answermsg.content.strip()
 
 async def retrieve_region(ctx, guimsg, line):
     # Ask and set pending
     await _set_pending(guimsg, line)
-    await ctx.send("What region do you play in?")
+    qmsg = await ctx.send("What region do you play in?")
 
     check = lambda msg: msg.author == ctx.author
     answermsg = await ctx.bot.wait_for('message', check=check)
 
     newembed = embed_desc_al(guimsg.embeds[0], line, f"| {answermsg.content.strip()}")
     await guimsg.edit(embed=newembed)
+    await qmsg.delete()
     return answermsg.content.strip()
 
 async def retrieve_desc(ctx, guimsg, line):
     # Ask and set pending
     await _set_pending(guimsg, line)
-    await ctx.send("What region do you play in?")
+    qmsg = await ctx.send("Please send a description for your coaching session.")
 
     check = lambda msg: msg.author == ctx.author
     answermsg = await ctx.bot.wait_for('message', check=check)
 
     newembed = embed_desc_al(guimsg.embeds[0], line, f"| {answermsg.content.strip()}")
     await guimsg.edit(embed=newembed)
+    await qmsg.delete()
     return answermsg.content.strip()
 
 async def retrieve_replays(ctx, bot, guimsg, line):
     """Waits for user to send 2 attachments that end with .replay"""
+    await ctx.send("Time to send your replays! Send your replays here now")
+
+    tempdir = "replays/"
 
     tasks = []
     check = lambda m: m.author.id == ctx.author.id and len(m.attachments)>0

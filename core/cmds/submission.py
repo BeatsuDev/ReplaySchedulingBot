@@ -1,10 +1,12 @@
-from utils.submission import processes
+import discord
+
+from utils.submission.processes import retrieve_ingame, retrieve_twitch, retrieve_region, retrieve_desc, retrieve_replays
 from utils.submission.errors import *
 from utils.submission.gui import embed_desc_al
 
 async def form(ctx, bot):
     desc = (
-        f"✔️ Discord name | {ctx.author.name}#{ctx.author.discriminator}"
+        f"✅ Discord name | {ctx.author.name}#{ctx.author.discriminator}\n"
         "⭕ In-game name\n"
         "⭕ Twitch Name\n"
         "⭕ Region\n"
@@ -24,18 +26,18 @@ async def form(ctx, bot):
 
     guimsg = await ctx.send(embed=gui)
 
-    try:
-        ingame_name = await retrieve_ingame(ctx, guimsg, 1)
-        twitch_name = await retrieve_twitch(ctx, guimsg, 2)
-        region = await retrieve_region(ctx, guimsg, 3)
-        desc = await retrieve_desc(ctx, guimsg, 4)
-        replay1, replay2 = await retrieve_replays(ctx, guimsg, 5)
-        await set_replay_info(ctx, guimsg, 6, replay1, replay2)
+    #try:
+    ingame_name = await retrieve_ingame(ctx, guimsg, 1)
+    twitch_name = await retrieve_twitch(ctx, guimsg, 2)
+    region = await retrieve_region(ctx, guimsg, 3)
+    desc = await retrieve_desc(ctx, guimsg, 4)
+    replay1, replay2 = await retrieve_replays(ctx, bot, guimsg, 5)
+    await set_replay_info(ctx, guimsg, 6, replay1, replay2)
 
-    except Exception as e:
-        await ctx.send(f'Error: {e}')
-        bot.db['waiting'].delete(userid=ctx.author.id)
-        return
+    #except Exception as e:
+    #    await ctx.send(f'Error: {e}')
+    #    bot.db['waiting'].delete(userid=ctx.author.id)
+    #    return
 
     valid, error = await _check_replays([ingame_name, twitch_name, region, desc], [replay1, replay2], ctx, bot)
     if bot.logger: bot.logger.debug(f'Checked replays. Error: {error}')
