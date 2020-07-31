@@ -32,9 +32,13 @@ class Turk(commands.Bot):
 
     async def load_all_cogs(self):
         for filename in os.listdir('core/cogs/'):
-            if filename.endswith('.py'):
+            if not filename.endswith('.py'): continue
+            try:
                 self.load_extension(f'core.cogs.{filename[:-3]}')
-                if self.logger: self.logger.debug(f"Loaded bot extension core.cogs.{filename[:-3]}")
+                if self.logger:
+                    self.logger.debug(f"Loaded bot extension core.cogs.{filename[:-3]}")
+            except Exception as e:
+                self.logger.warning(f"Failed to load bot extension {filename}. Error: {e}")
 
     async def on_ready(self):
         print((f'\n\nLogged in as {self.user.name}#{self.user.discriminator};'
