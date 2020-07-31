@@ -24,7 +24,7 @@ class Turk(commands.Bot):
         self.loop = asyncio.get_event_loop()
 
         # Database
-        self.db = dataset.connect(os.environ.get('MAIN_DB', 'sqlite:///mainDB.db'))
+        self.db = dataset.connect(os.environ.get('MAIN_DB'))
         if not self.db['users'].exists: self.db.create_table('users', primary_id='userid')
         if not self.db['entries'].exists: self.db.create_table('entries')
         if not self.db['waiting'].exists: self.db.create_table('waiting')

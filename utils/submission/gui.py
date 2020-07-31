@@ -1,5 +1,7 @@
+from utils.submission.errors import AlreadyChangedError
+from discord import Embed
 
-def embed_desc_al(embed, line, append):
+def embed_desc_al(embed, line, append) -> Embed:
     '''
     I honestly can't remember what al stood for. This function changes the given
     line to True, then appends `append` to that line

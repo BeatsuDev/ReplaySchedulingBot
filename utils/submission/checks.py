@@ -6,7 +6,8 @@ def is_waiting():
     going through the replay submission process
     '''
     async def predicate(ctx):
-        return True if ctx.bot.db['waiting'].find_one(ctx.author.id) else False
+        db = dataset.connect(os.environ.get('MAIN_DB'))
+        return True if db['waiting'].find_one(ctx.author.id) else False
     return commands.check(predicate)
 
 def is_not_waiting():
@@ -15,5 +16,6 @@ def is_not_waiting():
     and is not going through the replay submission process
     '''
     async def predicate(ctx):
-        return False if ctx.bot.db['waiting'].find_one(ctx.author.id) else True
+        db = dataset.connect(os.environ.get('MAIN_DB'))
+        return False if db['waiting'].find_one(ctx.author.id) else True
     return commands.check(predicate)
