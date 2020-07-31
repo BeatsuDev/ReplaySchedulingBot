@@ -21,14 +21,14 @@ class Turk(commands.Bot):
         ballchasing_token = os.environ.get('BCTOKEN', '<---- ENTER YOUR BALLCHASING TOKEN ---->')
         self.bc = Ballchasing(ballchasing_token, logger=BCLogger)
         self.logger = Logger
-        self.logger.warning('PLEASE WORK FFS')
         self.loop = asyncio.get_event_loop()
 
-        self.db = dataset.connect('sqlite:///mainDB.db')
-        self.db.create_table('users', primary_id='userid')
-        self.db.create_table('entries')
-        self.db.create_table('waiting')
-        self.db.create_table('scheduled')
+        # Database
+        self.db = dataset.connect(os.environ.get('MAIN_DB', 'sqlite:///mainDB.db'))
+        if not self.db['users'].exists: self.db.create_table('users', primary_id='userid')
+        if not self.db['entries'].exists: self.db.create_table('entries')
+        if not self.db['waiting'].exists: self.db.create_table('waiting')
+        if not self.db['scheduled'].exists: self.db.create_table('scheduled')
 
     async def load_all_cogs(self):
         for filename in os.listdir('core/cogs/'):
@@ -36,11 +36,10 @@ class Turk(commands.Bot):
                 self.load_extension(f'core.cogs.{filename[:-3]}')
                 if self.logger: self.logger.debug(f"Loaded bot extension core.cogs.{filename[:-3]}")
 
-
-
     async def on_ready(self):
         print((f'\n\nLogged in as {self.user.name}#{self.user.discriminator};'
             f'connected to {len(self.users)} users through {len(self.guilds)} guilds!'
             ' Invite with link'
-            '\nhttps://discordapp.com/api/oauth2/authorize?client_id=661378621436461056&permissions=124992&scope=bot\n\n'))
+            '\nhttps://discordapp.com/api/oauth2/authorize?'
+            'client_id=661378621436461056&permissions=124992&scope=bot\n\n'))
         await self.load_all_cogs()
