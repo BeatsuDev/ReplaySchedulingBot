@@ -1,22 +1,10 @@
 import asyncio, os, time
-from utils.submission.gui import embed_desc_al
+from utils.submission.gui import embed_desc_al, embed_set_pending
 from utils.submission.errors import *
 
-async def _set_pending(guimsg, line):
-    '''Sets the given line to pending. Just changes the emoji'''
-    embed = guimsg.embeds[0]
-    lines = embed.description.split('\n')
-
-    if lines[line][0] == '✅':
-        raise AlreadyChangedError("The line has already been changed to \"Completed\"")
-
-    lines[line] = '🔄' + lines[line][1:]
-    embed.description = '\n'.join(lines)
-    await guimsg.edit(embed=embed)
-
-async def retrieve_ingame(ctx, guimsg, line):
+async def retrieve_ingame(ctx, guimsg, line) -> str:
     # Ask and set pending
-    await _set_pending(guimsg, line)
+    await embed_set_pending(guimsg, line)
     qmsg = await ctx.send("What's your IGN (In-game name)? This will be checked later")
 
     # Answer message
@@ -30,9 +18,9 @@ async def retrieve_ingame(ctx, guimsg, line):
     await qmsg.delete()
     return answermsg.content.strip()
 
-async def retrieve_twitch(ctx, guimsg, line):
+async def retrieve_twitch(ctx, guimsg, line) -> str:
     # Ask and set pending
-    await _set_pending(guimsg, line)
+    await embed_set_pending(guimsg, line)
     qmsg = await ctx.send("What's your name Twitch?")
 
     check = lambda msg: msg.author == ctx.author
@@ -44,9 +32,9 @@ async def retrieve_twitch(ctx, guimsg, line):
     await qmsg.delete()
     return answermsg.content.strip()
 
-async def retrieve_region(ctx, guimsg, line):
+async def retrieve_region(ctx, guimsg, line) -> str:
     # Ask and set pending
-    await _set_pending(guimsg, line)
+    await embed_set_pending(guimsg, line)
     qmsg = await ctx.send("What region do you play in?")
 
     check = lambda msg: msg.author == ctx.author
@@ -57,9 +45,9 @@ async def retrieve_region(ctx, guimsg, line):
     await qmsg.delete()
     return answermsg.content.strip()
 
-async def retrieve_desc(ctx, guimsg, line):
+async def retrieve_desc(ctx, guimsg, line) -> str:
     # Ask and set pending
-    await _set_pending(guimsg, line)
+    await embed_set_pending(guimsg, line)
     qmsg = await ctx.send("Please send a description for your coaching session.")
 
     check = lambda msg: msg.author == ctx.author
@@ -70,7 +58,7 @@ async def retrieve_desc(ctx, guimsg, line):
     await qmsg.delete()
     return answermsg.content.strip()
 
-async def retrieve_replays(ctx, bot, guimsg, line):
+async def retrieve_replays(ctx, bot, guimsg, line) -> tuple:
     """Waits for user to send 2 attachments that end with .replay"""
     await ctx.send("Time to send your replays! Send your replays here now")
 
@@ -113,12 +101,12 @@ async def retrieve_replays(ctx, bot, guimsg, line):
             return
 
     # Tasks should be complete, so time to retrieve the results
-    replays = [task.result() for task in tasks]
+    replays = tuple([task.result() for task in tasks])
     return replays
 
 
 async def _ready_replay(id, bot, interval=30, author=None):
-    """Attempts to load a replay repeatedly until succesfull or after 300 seconds has gone.
+    """Attempts to load a replay repeatedly until succesfull or after 120 seconds has gone.
     (Meant for giving ballchasing.com time to process the replay) In the future this should
     be error handled within Ballchasing.replay() directly."""
     ready = False
@@ -137,9 +125,9 @@ async def _ready_replay(id, bot, interval=30, author=None):
 
 
 async def set_replay_info(ctx, guimsg, startline, replay1, replay2, in_game):
-    await _set_pending(guimsg, startline)
-    await _set_pending(guimsg, startline+1)
-    await _set_pending(guimsg, startline+2)
+    await embed_set_pending(guimsg, startline)
+    await embed_set_pending(guimsg, startline+1)
+    await embed_set_pending(guimsg, startline+2)
 
     playlist = replay1.playlist
 
