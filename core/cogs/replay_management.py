@@ -30,4 +30,4 @@ class ReplayManagement(commands.Cog):
 
 def setup(bot):
     bot.add_cog(ReplayManagement(bot))
-    bot.logger.debug("[COG] Added the cog ReplayStatus to the bot")
+    bot.logger.debug("Added the cog ReplayStatus to the bot")

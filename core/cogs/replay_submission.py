@@ -34,4 +34,4 @@ class ReplaySubmission(commands.Cog):
 
 def setup(bot):
     bot.add_cog(ReplaySubmission(bot))
-    bot.logger.debug("[COG] Added the cog ReplaySubmission to the bot")
+    bot.logger.debug("Added the cog ReplaySubmission to the bot")

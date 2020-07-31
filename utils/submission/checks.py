@@ -1,4 +1,6 @@
 from discord.ext import commands
+import dataset
+import os
 
 def is_waiting():
     '''
